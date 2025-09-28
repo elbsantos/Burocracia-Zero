@@ -1,35 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import api, { setAuthToken } from '../services/api';
+import React from 'react';
+import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import { setAuthToken } from '../services/api';
+import ClientsPage from './ClientsPage'; // Importar a página de clientes
+
+// Componente para a página de boas-vindas do Dashboard
+function DashboardWelcome() {
+  return (
+    <div>
+      <h3>Bem-vindo ao seu painel de controlo!</h3>
+      <p>Use o menu à esquerda para navegar pelas funcionalidades.</p>
+    </div>
+  );
+}
+
+// Componente para a futura página de faturas
+function InvoicesPagePlaceholder() {
+  return <div>Página de Faturas (em construção)</div>;
+}
 
 function DashboardPage() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  // useEffect é um hook que corre quando o componente carrega
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        // Tenta ir buscar os dados do utilizador ao endpoint /users/me/
-        const response = await api.get('/users/me/');
-        setUser(response.data);
-      } catch (error) {
-        console.error("Não foi possível ir buscar os dados do utilizador", error);
-        // Se falhar (ex: refresh token expirou), o interceptor deve tratar do logout
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // Verifica se já existe um token para evitar pedidos desnecessários
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      setAuthToken(token); // Configura o token no axios ao carregar a página
-      fetchUser();
-    } else {
-      // Se não houver token, não estamos logados, não há nada para carregar
-      setLoading(false);
-    }
-  }, []); // O array vazio [] significa que este efeito corre apenas uma vez
+  const location = useLocation();
 
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
@@ -38,23 +28,36 @@ function DashboardPage() {
     window.location.href = '/login';
   };
 
-  if (loading) {
-    return <div>A carregar...</div>;
-  }
+  // Estilo para o link ativo
+  const getLinkStyle = (path) => ({
+    color: location.pathname.includes(path) ? 'blue' : 'black',
+    textDecoration: 'none'
+  });
 
   return (
-    <div>
-      <h1>Dashboard</h1>
-      {user ? (
-        <div>
-          <p>Bem-vindo, {user.full_name}! Esta página é protegida.</p>
-          <p>Email: {user.email}</p>
-          <p>Plano: {user.subscription_plan}</p>
-        </div>
-      ) : (
-        <p>Não foi possível carregar os dados do utilizador. Por favor, faça login.</p>
-      )}
-      <button onClick={handleLogout}>Logout</button>
+    <div style={{ display: 'flex', gap: '20px' }}>
+      {/* Menu Lateral do Dashboard */}
+      <div style={{ width: '200px', borderRight: '1px solid #ccc', paddingRight: '20px' }}>
+        <h3>Menu</h3>
+        <ul style={{ listStyle: 'none', padding: 0 }}>
+          <li style={{ marginBottom: '10px' }}>
+            <Link to="/dashboard/clients" style={getLinkStyle('/clients')}>Meus Clientes</Link>
+          </li>
+          <li style={{ marginBottom: '10px' }}>
+            <Link to="/dashboard/invoices" style={getLinkStyle('/invoices')}>Minhas Faturas</Link>
+          </li>
+        </ul>
+        <button onClick={handleLogout} style={{ marginTop: '20px', width: '100%' }}>Logout</button>
+      </div>
+
+      {/* Área de Conteúdo Principal */}
+      <div style={{ flex: 1 }}>
+        <Routes>
+          <Route path="/" element={<DashboardWelcome />} />
+          <Route path="clients" element={<ClientsPage />} />
+          <Route path="invoices" element={<InvoicesPagePlaceholder />} />
+        </Routes>
+      </div>
     </div>
   );
 }
