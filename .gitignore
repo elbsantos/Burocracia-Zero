@@ -1,0 +1,30 @@
+# Ficheiros do Sistema Operativo
+.DS_Store
+Thumbs.db
+
+# Ficheiros de IDEs e Editores
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Ficheiros de Ambiente Python
+backend/venv/
+backend/__pycache__/
+backend/*.pyc
+backend/db.sqlite3
+.env
+
+# Ficheiros de Log e Media do Django
+backend/logs/
+backend/media/
+
+# Ficheiros do Node.js
+frontend/node_modules/
+frontend/build/
+frontend/npm-debug.log
+frontend/.pnp.js
+.pnp.loader.mjs
+
+# Ficheiros de Teste
+frontend/coverage/
