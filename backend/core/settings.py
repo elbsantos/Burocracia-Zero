@@ -9,6 +9,12 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
+# backend/core/settings.py
+import os
+from dotenv import load_dotenv
+
+# Carrega as variáveis do ficheiro .env
+load_dotenv()
 
 from pathlib import Path
 
@@ -39,7 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users',
     'invoicing',
-      
+    'integrations',
 
     # Apps de Terceiros
     'rest_framework',

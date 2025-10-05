@@ -1,16 +1,13 @@
-from django.db import models
-
-# Create your models here.
 # backend/users/models.py
 
+from django.contrib.auth.models import AbstractUser, BaseUserManager, PermissionsMixin
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.utils import timezone
 
-# Esta classe gere a criação de utilizadores e superutilizadores
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
-            raise ValueError('O campo de e-mail é obrigatório')
+            raise ValueError('O campo Email é obrigatório')
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
@@ -28,25 +25,24 @@ class CustomUserManager(BaseUserManager):
 
         return self.create_user(email, password, **extra_fields)
 
-# Este é o nosso modelo de utilizador principal
-class CustomUser(AbstractBaseUser, PermissionsMixin):
-    
-    # Planos de Subscrição
+class CustomUser(AbstractUser):
+    # Removemos 'username' e tornamos 'email' o campo de login
+    username = None
+    email = models.EmailField(unique=True, verbose_name='Endereço de e-mail')
+    full_name = models.CharField(max_length=255, verbose_name='Nome Completo')
+    whatsapp_number = models.CharField(max_length=20, blank=True, verbose_name='Número do WhatsApp')
+
+    # --- Campos de Subscrição ---
     class SubscriptionPlan(models.TextChoices):
-        FREE = 'FREE', 'Gratuito'
-        ESSENTIAL = 'ESSENTIAL', 'Essencial'
-        COMPLETE = 'COMPLETE', 'Completo'
+        FREE = 'FREE', 'Plano Gratuito'
+        BASIC = 'BASIC', 'Plano Básico'
+        PREMIUM = 'PREMIUM', 'Plano Premium'
 
-    # Estado da Subscrição
     class SubscriptionStatus(models.TextChoices):
-        ACTIVE = 'ACTIVE', 'Ativo'
-        CANCELED = 'CANCELED', 'Cancelado'
-        TRIAL = 'TRIAL', 'Em Teste'
+        ACTIVE = 'ACTIVE', 'Ativa'
+        CANCELED = 'CANCELED', 'Cancelada'
+        INCOMPLETE = 'INCOMPLETE', 'Incompleta'
 
-    email = models.EmailField(unique=True)
-    full_name = models.CharField(max_length=255, blank=True)
-    whatsapp_number = models.CharField(max_length=20, blank=True)
-    
     subscription_plan = models.CharField(
         max_length=10,
         choices=SubscriptionPlan.choices,
@@ -55,20 +51,20 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     subscription_status = models.CharField(
         max_length=10,
         choices=SubscriptionStatus.choices,
-        default=SubscriptionStatus.TRIAL
+        default=SubscriptionStatus.INCOMPLETE
     )
 
-    is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    # --- NOVOS CAMPOS PARA A INTEGRAÇÃO MOLONI ---
+    # Estes campos devem estar aqui, no corpo principal da classe CustomUser
+    moloni_access_token = models.CharField(max_length=512, blank=True, null=True)
+    moloni_refresh_token = models.CharField(max_length=512, blank=True, null=True)
+    moloni_token_expires_at = models.DateTimeField(blank=True, null=True)
 
-    # Define o gestor do modelo
+
+    # --- Configuração do Manager ---
     objects = CustomUserManager()
 
-    # Define o campo de e-mail como o campo de login
     USERNAME_FIELD = 'email'
-    # Campos obrigatórios ao criar um superuser pela linha de comando
     REQUIRED_FIELDS = ['full_name']
 
     def __str__(self):
