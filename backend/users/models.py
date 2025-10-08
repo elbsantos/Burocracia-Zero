@@ -31,7 +31,9 @@ class CustomUser(AbstractUser):
     email = models.EmailField(unique=True, verbose_name='Endereço de e-mail')
     full_name = models.CharField(max_length=255, verbose_name='Nome Completo')
     whatsapp_number = models.CharField(max_length=30, blank=True, verbose_name='Número do WhatsApp')
-
+    chatbot_state = models.CharField(max_length=50, default='idle', blank=True)
+    chatbot_context = models.JSONField(default=dict, blank=True)
+    
     # --- Campos de Subscrição ---
     class SubscriptionPlan(models.TextChoices):
         FREE = 'FREE', 'Plano Gratuito'
