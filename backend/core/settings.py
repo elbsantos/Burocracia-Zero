@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'users',
     'invoicing',
     'integrations',
+    'signing',
 
     # Apps de Terceiros
     'rest_framework',
@@ -188,3 +189,6 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000", # O nosso frontend React
 ]
 
+# Configuração para ficheiros carregados pelos utilizadores (media)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
