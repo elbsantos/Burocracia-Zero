@@ -30,7 +30,7 @@ class CustomUser(AbstractUser):
     username = None
     email = models.EmailField(unique=True, verbose_name='Endereço de e-mail')
     full_name = models.CharField(max_length=255, verbose_name='Nome Completo')
-    whatsapp_number = models.CharField(max_length=20, blank=True, verbose_name='Número do WhatsApp')
+    whatsapp_number = models.CharField(max_length=30, blank=True, verbose_name='Número do WhatsApp')
 
     # --- Campos de Subscrição ---
     class SubscriptionPlan(models.TextChoices):

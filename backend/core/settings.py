@@ -31,7 +31,11 @@ SECRET_KEY = 'django-insecure-0_d6)mco^)73xyfs15=3vjsz$jw8nebe_7et7*_f2b37-4$brj
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '.ngrok-free.app',
+]
 
 
 # Application definition
@@ -47,6 +51,7 @@ INSTALLED_APPS = [
     'invoicing',
     'integrations',
     'signing',
+    'chatbot',
 
     # Apps de Terceiros
     'rest_framework',

@@ -9,7 +9,8 @@ urlpatterns = [
     path('api/users/', include('users.urls')),
     path('api/invoicing/', include('invoicing.urls')),
     path('api/integrations/', include('integrations.urls')),
-    path('api/signing/', include('signing.urls')),    
+    path('api/signing/', include('signing.urls')), 
+    path('api/chatbot/', include('chatbot.urls')),   
 ]
 
 # Adiciona os URLs para servir ficheiros de media em modo de desenvolvimento
