@@ -1,18 +1,33 @@
+// frontend/src/pages/DashboardPage.js
 import React from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
-import { setAuthToken } from '../services/api';
+import api from '../services/api'; // Corrigido: importação do api
 
 import ClientsPage from './ClientsPage';
 import InvoiceCreatePage from './InvoiceCreatePage';
 import InvoicesListPage from './InvoicesListPage';
-import IntegrationsPage from './IntegrationsPage'; // Importe a nova página
+import IntegrationsPage from './IntegrationsPage';
+import SigningPage from './SigningPage';
 
-function DashboardWelcome() { /* ... (sem alterações) ... */ }
+function DashboardWelcome() {
+  return <h2>Bem-vindo ao seu Dashboard!</h2>;
+}
 
 function DashboardPage() {
   const location = useLocation();
-  const handleLogout = () => { /* ... (sem alterações) ... */ };
-  const getLinkStyle = (path) => ({ /* ... (sem alterações) ... */ });
+
+  const handleLogout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    delete api.defaults.headers.common['Authorization'];
+    window.location.href = '/login';
+  };
+
+  const getLinkStyle = (path) => ({
+    fontWeight: location.pathname.includes(path) ? 'bold' : 'normal',
+    textDecoration: 'none',
+    color: 'black'
+  });
 
   return (
     <div style={{ display: 'flex', gap: '20px' }}>
@@ -24,6 +39,9 @@ function DashboardPage() {
           </li>
           <li style={{ marginBottom: '10px' }}>
             <Link to="/dashboard/invoices" style={getLinkStyle('/invoices')}>Minhas Faturas</Link>
+          </li>
+          <li style={{ marginBottom: '10px' }}>
+            <Link to="/dashboard/signing" style={getLinkStyle('/signing')}>Assinaturas</Link>
           </li>
           <li style={{ marginBottom: '10px' }}>
             <Link to="/dashboard/integrations" style={getLinkStyle('/integrations')}>Integrações</Link>
@@ -38,7 +56,8 @@ function DashboardPage() {
           <Route path="clients" element={<ClientsPage />} />
           <Route path="invoices" element={<InvoicesListPage />} />
           <Route path="invoices/new" element={<InvoiceCreatePage />} />
-          <Route path="integrations" element={<IntegrationsPage />} /> {/* Adicione a nova rota */}
+          <Route path="integrations" element={<IntegrationsPage />} />
+          <Route path="signing" element={<SigningPage />} />
         </Routes>
       </div>
     </div>
