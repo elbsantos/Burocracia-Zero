@@ -28,3 +28,10 @@ frontend/.pnp.js
 
 # Ficheiros de Teste
 frontend/coverage/
+
+# Ignore local env
+.env
+
+# Ignore compiled python files
+__pycache__/
+*.pyc
