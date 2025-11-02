@@ -1,6 +1,5 @@
-# backend/invoicing/models.py
-
 from django.db import models
+from decimal import Decimal # Adicionada para garantir o tipo correto no cálculo
 from django.conf import settings
 
 # --- Modelo de Cliente ---
@@ -32,10 +31,10 @@ class Invoice(models.Model):
         RECIBO = 'RC', 'Recibo'
 
     class InvoiceStatus(models.TextChoices):
-        POR_PAGAR = 'UNPAID', 'Por Pagar'
-        PAGA = 'PAID', 'Paga'
-        ATRASADA = 'OVERDUE', 'Atrasada'
-        ANULADA = 'VOID', 'Anulada'
+        POR_PAGAR = 'Pendente'
+        PAGA = 'Paga'
+        ATRASADA = 'Atrasada'
+        ANULADA = 'Anulada'
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='invoices')
     client = models.ForeignKey(Client, on_delete=models.PROTECT, related_name='invoices')
@@ -53,6 +52,20 @@ class Invoice(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def calculated_total(self):
+        # Calcula o total usando iteração em Python (alternativa para evitar o ImportError)
+        total = Decimal('0.00')
+        for item in self.items.all():
+            total += item.total_price
+        return total
+
+    def save(self, *args, **kwargs):
+        # Atualiza o total_amount com o valor calculado antes de salvar
+        if self.pk:
+            self.total_amount = self.calculated_total
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.get_document_type_display()} para {self.client.name} - {self.total_amount}€"
