@@ -28,3 +28,7 @@ frontend/.pnp.js
 
 # Ficheiros de Teste
 frontend/coverage/
+
+# Ignore compiled python files
+__pycache__/
+*.pyc
