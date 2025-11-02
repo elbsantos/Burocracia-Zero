@@ -1,10 +1,6 @@
 #!/bin/sh
 set -e
 
-if [ -f .env ]; then
-  export $(cat .env | sed 's/#.*//g' | xargs)
-fi
-
 echo "Running migrations..."
 python manage.py migrate --noinput
 

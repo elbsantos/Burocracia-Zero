@@ -19,7 +19,7 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    command: /entrypoint.sh
+    command: /app/entrypoint.sh
     env_file:
       - .env
     environment:
