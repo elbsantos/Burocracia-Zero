@@ -23,7 +23,7 @@ services:
     env_file:
       - .env
     environment:
-      - DJANGO_WSGI_MODULE=${DJANGO_WSGI_MODULE}
+      - DJANGO_WSGI_MODULE=${DJANGO_WSGI_MODULE:-core.wsgi}
     depends_on:
       db:
         condition: service_healthy
@@ -31,11 +31,6 @@ services:
       - ./backend:/app
     ports:
       - "8000:8000"
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8000/healthz || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   frontend:
     build:

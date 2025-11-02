@@ -21,6 +21,4 @@ RUN chmod +x /app/entrypoint.sh
 
 EXPOSE 8000
 
-ENV DJANGO_WSGI_MODULE=core.wsgi
-
 CMD ["/app/entrypoint.sh"]
