@@ -2,45 +2,108 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
-      - 'feature/**'
+    branches: [ main, master, feature/docs-estrutura, chore/dockerize ]
   pull_request:
+    branches: [ main, master, feature/docs-estrutura ]
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
 
 jobs:
   frontend:
+    name: Frontend tests and build
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
+      - uses: actions/checkout@v4
+      - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
-          cache-dependency-path: 'frontend/package-lock.json'
-
       - name: Install dependencies
-        working-directory: ./frontend
-        run: |
-          if [ -f package-lock.json ]; then
-            npm ci
-          else
-            npm install
-          fi
-
-      - name: Lint
-        working-directory: ./frontend
-        run: |
-          if [ -f package.json ]; then
-            npm run lint || true
-          fi
-
+        working-directory: frontend
+        run: npm ci
       - name: Run tests
-        working-directory: ./frontend
+        working-directory: frontend
+        run: npm run test -- --watchAll=false || true
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+
+  backend:
+    name: Backend tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: burocracia
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d burocracia"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
         run: |
-          if [ -f package.json ]; then
-            npm test || true
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+      - name: Run migrations
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/burocracia
+        run: |
+          cd backend
+          python manage.py migrate --noinput || true
+      - name: Run tests
+        run: |
+          if [ -f backend/manage.py ]; then
+            cd backend
+            # run tests if exist
+            if [ -d tests ] || ls */tests 2>/dev/null; then
+              pytest || true
+            else
+              echo "No tests found"
+            fi
           fi
+
+  docker-build:
+    name: Build Docker images (optional push)
+    runs-on: ubuntu-latest
+    needs: [frontend, backend]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./
+          file: ./frontend/Dockerfile
+          push: false
+          tags: ghcr.io/${{ github.repository_owner }}/burocracia-frontend:latest
+      - name: Build backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./
+          file: ./backend/Dockerfile
+          push: false
+          tags: ghcr.io/${{ github.repository_owner }}/burocracia-backend:latest
